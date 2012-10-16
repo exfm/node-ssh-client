@@ -1,0 +1,23 @@
+{
+  "author": "Lucas Hrabovsky <lucas@ex.fm>",
+  "name": "node-ssh-client",
+  "description": "A simple SSH client for node.",
+  "version": "0.0.0",
+  "homepage": "http://github.com/exfm/node-ssh-client",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/exfm/node-ssh-client.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "1.4.1",
+    "chai": "1.2.0"
+  },
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
