@@ -159,3 +159,43 @@ SSHClient.prototype.putFile = function(localPath, remotePath, cb){
         cb(error, stdout, stderr);
     });
 };
+
+
+function LocalClient(){
+
+}
+
+LocalClient.prototype.cd = function(dir, cb){
+    exec('cd ' + dir, function(err, stdout, stderr){
+        cb(err, stdout, stderr);
+    });
+};
+
+LocalClient.prototype.close = function(){
+    // Nada?
+};
+
+LocalClient.prototype.exec = function(cmd, cb){
+    exec(cmd, cb);
+};
+
+LocalClient.prototype.mkdir = function(dir, cb){
+    this.exec('mkdir -p ' + dir, cb);
+};
+
+LocalClient.prototype.put = function(contents, remotePath, cb){
+    var tmpPath = 'file.' + (Math.random() * 100),
+        self = this;
+    fs.writeFile(tmpPath, contents, 'utf-8', function(err){
+        self.putFile(tmpPath, remotePath, function(err, stdout, stderr){
+            fs.unlink(tmpPath, function(){
+                cb(err, stdout, stderr);
+            });
+        });
+    });
+};
+
+// Move
+LocalClient.prototype.putFile = function(localPath, remotePath, cb){
+    this.exec('mv ' + localPath + ' ' + remotePath, cb);
+};
