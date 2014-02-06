@@ -8,17 +8,24 @@ var util = require('util'),
     spawn = child_process.spawn,
     exec = child_process.exec;
 
-module.exports = function(username, host, connectcb){
-    return new SSHClient(username, host, connectcb);
+module.exports = function(username, host, port, connectcb){
+    return new SSHClient(username, host, port, connectcb);
 };
 
-function SSHClient(username, host, connectcb){
+function SSHClient(username, host, port, connectcb){
+
+    if(connectcb == undefined && port != undefined){
+        connectcb == port; // allow for port to not be defined
+        port = 22;
+    }
+
     var self = this,
         outBuff = "",
         out;
 
     this.username = username;
     this.host = host;
+    this.port = port;
     this.ready = false;
     this.queue = [];
     this.command = null;
@@ -29,9 +36,7 @@ function SSHClient(username, host, connectcb){
     this.connected = false;
     this.killedSafe = false;
 
-
-
-    this.ssh = spawn('ssh', ['-t', '-t', username + '@' + host]);
+    this.ssh = spawn('ssh', ['-p', port, '-t', username + '@' + host]);
     this.ssh.stdout.on('data', function (data){
         if(self.connected === false){
             self.connected = true;
