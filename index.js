@@ -1,21 +1,19 @@
 "use strict";
 
 
-var util = require('util'),
-    EventEmitter = require('events').EventEmitter,
-    fs = require('fs'),
-    child_process = require('child_process'),
-    spawn = child_process.spawn,
-    exec = child_process.exec;
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+var fs = require('fs');
+var child_process = require('child_process');
+var spawn = child_process.spawn;
+var exec = child_process.exec;
 
-module.exports = function(username, host, connectcb){
-    return new SSHClient(username, host, connectcb);
-};
+module.exports = (username, host, connectcb) => new SSHClient(username, host, connectcb);
 
 function SSHClient(username, host, connectcb){
-    var self = this,
-        outBuff = "",
-        out;
+    var self = this;
+    var outBuff = "";
+    var out;
 
     this.username = username;
     this.host = host;
@@ -32,11 +30,11 @@ function SSHClient(username, host, connectcb){
 
 
     this.ssh = spawn('ssh', ['-t', '-t', username + '@' + host]);
-    this.ssh.stdout.on('data', function (data){
+    this.ssh.stdout.on('data', data => {
         if(self.connected === false){
             self.connected = true;
             self.working = false;
-            return self.exec('pwd', function(){
+            return self.exec('pwd', () => {
                 self.emit('connect');
             });
         }
@@ -81,16 +79,16 @@ function SSHClient(username, host, connectcb){
         self.working = false;
     });
 
-    this.ssh.on('exit', function (code, signal) {
+    this.ssh.on('exit', (code, signal) => {
         if(code !==0 && self.killedSafe === false){
-            setTimeout(function(){
+            setTimeout(() => {
                 console.error('Exited', self.lastError);
                 self.emit('error', self.lastError);
             }, 50);
         }
     });
 
-    this.on('connect', function(){
+    this.on('connect', () => {
         self.working = false;
 
         connectcb();
@@ -100,10 +98,10 @@ function SSHClient(username, host, connectcb){
         }
     });
 
-    this.interval = setInterval(function(){
+    this.interval = setInterval(() => {
         if(self.queue.length > 0 && self.working === false){
-            var d = self.queue.shift(),
-                s = '';
+            var d = self.queue.shift();
+            var s = '';
             self.cb = d[1];
             self.working = true;
             self.emit('sending', d[0]);
@@ -136,12 +134,12 @@ SSHClient.prototype.mkdir = function(dir, cb){
 };
 
 SSHClient.prototype.put = function(contents, remotePath, cb){
-    var tmpPath = 'file.' + (Math.random() * 100),
-        self = this;
+    var tmpPath = 'file.' + (Math.random() * 100);
+    var self = this;
 
-    fs.writeFile(tmpPath, contents, 'utf-8', function(err){
-        self.putFile(tmpPath, remotePath, function(err, stdout, stderr){
-            fs.unlink(tmpPath, function(){
+    fs.writeFile(tmpPath, contents, 'utf-8', err => {
+        self.putFile(tmpPath, remotePath, (err, stdout, stderr) => {
+            fs.unlink(tmpPath, () => {
                 cb(err, stdout, stderr);
             });
         });
@@ -155,7 +153,7 @@ SSHClient.prototype.putFile = function(localPath, remotePath, cb){
         this.username + '@' + this.host + ':' + remotePath
     ];
 
-    exec(c.join(' '), function(error, stdout, stderr){
+    exec(c.join(' '), (error, stdout, stderr) => {
         cb(error, stdout, stderr);
     });
 };
@@ -165,17 +163,17 @@ function LocalClient(){
 
 }
 
-LocalClient.prototype.cd = function(dir, cb){
-    exec('cd ' + dir, function(err, stdout, stderr){
+LocalClient.prototype.cd = (dir, cb) => {
+    exec('cd ' + dir, (err, stdout, stderr) => {
         cb(err, stdout, stderr);
     });
 };
 
-LocalClient.prototype.close = function(){
+LocalClient.prototype.close = () => {
     // Nada?
 };
 
-LocalClient.prototype.exec = function(cmd, cb){
+LocalClient.prototype.exec = (cmd, cb) => {
     exec(cmd, cb);
 };
 
@@ -184,11 +182,11 @@ LocalClient.prototype.mkdir = function(dir, cb){
 };
 
 LocalClient.prototype.put = function(contents, remotePath, cb){
-    var tmpPath = 'file.' + (Math.random() * 100),
-        self = this;
-    fs.writeFile(tmpPath, contents, 'utf-8', function(err){
-        self.putFile(tmpPath, remotePath, function(err, stdout, stderr){
-            fs.unlink(tmpPath, function(){
+    var tmpPath = 'file.' + (Math.random() * 100);
+    var self = this;
+    fs.writeFile(tmpPath, contents, 'utf-8', err => {
+        self.putFile(tmpPath, remotePath, (err, stdout, stderr) => {
+            fs.unlink(tmpPath, () => {
                 cb(err, stdout, stderr);
             });
         });
